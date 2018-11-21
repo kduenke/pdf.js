@@ -115,7 +115,7 @@ function safeSpawnSync(command, parameters, options) {
   var result = spawnSync(command, parameters, options);
   if (result.status !== 0) {
     console.log('Error: command "' + command + '" with parameters "' +
-                parameters + '" exited with code ' + result.status);
+      parameters + '" exited with code ' + result.status);
     process.exit(result.status);
   }
   return result;
@@ -145,9 +145,9 @@ function createWebpackConfig(defines, output) {
   var licenseHeaderLibre =
     fs.readFileSync('./src/license_header_libre.js').toString();
   var enableSourceMaps = !bundleDefines.FIREFOX && !bundleDefines.MOZCENTRAL &&
-                         !bundleDefines.CHROME;
+    !bundleDefines.CHROME;
   var skipBabel = bundleDefines.SKIP_BABEL ||
-                  process.env['SKIP_BABEL'] === 'true';
+    process.env['SKIP_BABEL'] === 'true';
 
   // Required to expose e.g., the `window` object.
   output.globalObject = 'this';
@@ -238,7 +238,7 @@ function checkChromePreferencesFile(chromePrefsPath, webPrefsPath) {
   }
   return webPrefsKeys.every(function (value, index) {
     return chromePrefsKeys[index] === value &&
-           chromePrefs.properties[value].default === webPrefs[value];
+      chromePrefs.properties[value].default === webPrefs[value];
   });
 }
 
@@ -251,7 +251,7 @@ function replaceWebpackRequire() {
 function replaceJSRootName(amdName, jsName) {
   // Saving old-style JS module name.
   return replace('root["' + amdName + '"] = factory()',
-                 'root["' + amdName + '"] = root.' + jsName + ' = factory()');
+    'root["' + amdName + '"] = root.' + jsName + ' = factory()');
 }
 
 function createBundle(defines) {
@@ -296,7 +296,7 @@ function createWebBundle(defines) {
     filename: viewerOutputName,
   });
   return gulp.src('./web/viewer.js')
-             .pipe(webpack2Stream(viewerFileConfig));
+    .pipe(webpack2Stream(viewerFileConfig));
 }
 
 function createComponentsBundle(defines) {
@@ -375,9 +375,9 @@ function createTestSource(testsName, bot) {
 
     if (!checkFile('test/' + PDF_BROWSERS)) {
       console.log('Browser manifest file test/' + PDF_BROWSERS +
-                  ' does not exist.');
+        ' does not exist.');
       console.log('Copy and adjust the example in ' +
-                  'test/resources/browser_manifests.');
+        'test/resources/browser_manifests.');
       this.emit('error', new Error('Missing manifest file'));
       return null;
     }
@@ -440,7 +440,7 @@ function makeRef(done, bot) {
   });
 }
 
-gulp.task('default', function() {
+gulp.task('default', function () {
   console.log('Available tasks:');
   var tasks = Object.keys(gulp.tasks);
   tasks.sort();
@@ -454,34 +454,34 @@ gulp.task('buildnumber', function (done) {
   console.log('### Getting extension build number');
 
   exec('git log --format=oneline ' + config.baseVersion + '..',
-      function (err, stdout, stderr) {
-    var buildNumber = 0;
-    if (!err) {
-      // Build number is the number of commits since base version
-      buildNumber = stdout ? stdout.match(/\n/g).length : 0;
-    } else {
-      console.log('This is not a Git repository; using default build number.');
-    }
-
-    console.log('Extension build number: ' + buildNumber);
-
-    var version = config.versionPrefix + buildNumber;
-
-    exec('git log --format="%h" -n 1', function (err, stdout, stderr) {
-      var buildCommit = '';
+    function (err, stdout, stderr) {
+      var buildNumber = 0;
       if (!err) {
-        buildCommit = stdout.replace('\n', '');
+        // Build number is the number of commits since base version
+        buildNumber = stdout ? stdout.match(/\n/g).length : 0;
+      } else {
+        console.log('This is not a Git repository; using default build number.');
       }
 
-      createStringSource('version.json', JSON.stringify({
-        version: version,
-        build: buildNumber,
-        commit: buildCommit,
-      }, null, 2))
-        .pipe(gulp.dest(BUILD_DIR))
-        .on('end', done);
+      console.log('Extension build number: ' + buildNumber);
+
+      var version = config.versionPrefix + buildNumber;
+
+      exec('git log --format="%h" -n 1', function (err, stdout, stderr) {
+        var buildCommit = '';
+        if (!err) {
+          buildCommit = stdout.replace('\n', '');
+        }
+
+        createStringSource('version.json', JSON.stringify({
+          version: version,
+          build: buildNumber,
+          commit: buildCommit,
+        }, null, 2))
+          .pipe(gulp.dest(BUILD_DIR))
+          .on('end', done);
+      });
     });
-  });
 });
 
 gulp.task('locale', function () {
@@ -520,11 +520,11 @@ gulp.task('locale', function () {
     locales.push(locale);
 
     chromeManifestContent += 'locale  pdf.js  ' + locale + '  locale/' +
-                             locale + '/\n';
+      locale + '/\n';
 
     if (checkFile(path + '/viewer.properties')) {
       viewerOutput += '[' + locale + ']\n' +
-                      '@import url(' + locale + '/viewer.properties)\n\n';
+        '@import url(' + locale + '/viewer.properties)\n\n';
     }
 
     if (checkFile(path + '/metadata.inc')) {
@@ -539,13 +539,13 @@ gulp.task('locale', function () {
     createStringSource('chrome.manifest.inc', chromeManifestContent)
       .pipe(gulp.dest(METADATA_OUTPUT)),
     gulp.src(L10N_DIR + '/{' + locales.join(',') + '}' +
-             '/{viewer,chrome}.properties', { base: L10N_DIR, })
+      '/{viewer,chrome}.properties', { base: L10N_DIR, })
       .pipe(gulp.dest(EXTENSION_LOCALE_OUTPUT)),
 
     createStringSource('locale.properties', viewerOutput)
       .pipe(gulp.dest(VIEWER_LOCALE_OUTPUT)),
     gulp.src(L10N_DIR + '/{' + locales.join(',') + '}' +
-             '/viewer.properties', { base: L10N_DIR, })
+      '/viewer.properties', { base: L10N_DIR, })
       .pipe(gulp.dest(VIEWER_LOCALE_OUTPUT))
   ]);
 });
@@ -576,9 +576,9 @@ gulp.task('cmaps', function () {
   compressCmaps(CMAP_INPUT, VIEWER_CMAP_OUTPUT, true);
 });
 
-gulp.task('bundle', ['buildnumber'], function () {
+gulp.task('bundle', gulp.series('buildnumber', function () {
   return createBundle(DEFINES).pipe(gulp.dest(BUILD_DIR));
-});
+}));
 
 function preprocessCSS(source, mode, defines, cleanup) {
   var outName = getTempFile('~preprocess', '.css');
@@ -607,7 +607,7 @@ function preprocessHTML(source, defines) {
 
 // Builds the generic production viewer that should be compatible with most
 // modern HTML5 browsers.
-gulp.task('generic', ['buildnumber', 'locale'], function () {
+gulp.task('generic', gulp.series('buildnumber', 'locale', function () {
   console.log();
   console.log('### Creating generic viewer');
   var defines = builder.merge(DEFINES, { GENERIC: true, });
@@ -618,27 +618,27 @@ gulp.task('generic', ['buildnumber', 'locale'], function () {
     createBundle(defines).pipe(gulp.dest(GENERIC_DIR + 'build')),
     createWebBundle(defines).pipe(gulp.dest(GENERIC_DIR + 'web')),
     gulp.src(COMMON_WEB_FILES, { base: 'web/', })
-        .pipe(gulp.dest(GENERIC_DIR + 'web')),
+      .pipe(gulp.dest(GENERIC_DIR + 'web')),
     gulp.src('LICENSE').pipe(gulp.dest(GENERIC_DIR)),
     gulp.src([
       'web/locale/*/viewer.properties',
       'web/locale/locale.properties'
     ], { base: 'web/', }).pipe(gulp.dest(GENERIC_DIR + 'web')),
     gulp.src(['external/bcmaps/*.bcmap', 'external/bcmaps/LICENSE'],
-             { base: 'external/bcmaps', })
-        .pipe(gulp.dest(GENERIC_DIR + 'web/cmaps')),
+      { base: 'external/bcmaps', })
+      .pipe(gulp.dest(GENERIC_DIR + 'web/cmaps')),
     preprocessHTML('web/viewer.html', defines)
-        .pipe(gulp.dest(GENERIC_DIR + 'web')),
+      .pipe(gulp.dest(GENERIC_DIR + 'web')),
     preprocessCSS('web/viewer.css', 'generic', defines, true)
-        .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
-        .pipe(gulp.dest(GENERIC_DIR + 'web')),
+      .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
+      .pipe(gulp.dest(GENERIC_DIR + 'web')),
 
     gulp.src('web/compressed.tracemonkey-pldi-09.pdf')
-        .pipe(gulp.dest(GENERIC_DIR + 'web')),
+      .pipe(gulp.dest(GENERIC_DIR + 'web')),
   ]);
-});
+}));
 
-gulp.task('components', ['buildnumber'], function () {
+gulp.task('components', gulp.series('buildnumber', function () {
   console.log();
   console.log('### Creating generic components');
   var defines = builder.merge(DEFINES, { COMPONENTS: true, GENERIC: true, });
@@ -656,21 +656,23 @@ gulp.task('components', ['buildnumber'], function () {
     createComponentsBundle(defines).pipe(gulp.dest(COMPONENTS_DIR)),
     gulp.src(COMPONENTS_IMAGES).pipe(gulp.dest(COMPONENTS_DIR + 'images')),
     preprocessCSS('web/pdf_viewer.css', 'components', defines, true)
-        .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
-        .pipe(gulp.dest(COMPONENTS_DIR)),
+      .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
+      .pipe(gulp.dest(COMPONENTS_DIR)),
   ]);
-});
+}));
 
-gulp.task('image_decoders', ['buildnumber'], function() {
+gulp.task('image_decoders', gulp.series('buildnumber', function () {
   console.log();
   console.log('### Creating image decoders');
-  var defines = builder.merge(DEFINES, { GENERIC: true,
-                                         IMAGE_DECODERS: true, });
+  var defines = builder.merge(DEFINES, {
+    GENERIC: true,
+    IMAGE_DECODERS: true,
+  });
 
   return createImageDecodersBundle(defines).pipe(gulp.dest(IMAGE_DECODERS_DIR));
-});
+}));
 
-gulp.task('minified-pre', ['buildnumber', 'locale'], function () {
+gulp.task('minified-pre', gulp.series('buildnumber', 'locale', function () {
   console.log();
   console.log('### Creating minified viewer');
   var defines = builder.merge(DEFINES, { MINIFIED: true, GENERIC: true, });
@@ -681,29 +683,29 @@ gulp.task('minified-pre', ['buildnumber', 'locale'], function () {
     createBundle(defines).pipe(gulp.dest(MINIFIED_DIR + 'build')),
     createWebBundle(defines).pipe(gulp.dest(MINIFIED_DIR + 'web')),
     createImageDecodersBundle(builder.merge(defines, { IMAGE_DECODERS: true, }))
-        .pipe(gulp.dest(MINIFIED_DIR + 'image_decoders')),
+      .pipe(gulp.dest(MINIFIED_DIR + 'image_decoders')),
     gulp.src(COMMON_WEB_FILES, { base: 'web/', })
-        .pipe(gulp.dest(MINIFIED_DIR + 'web')),
+      .pipe(gulp.dest(MINIFIED_DIR + 'web')),
     gulp.src([
       'web/locale/*/viewer.properties',
       'web/locale/locale.properties'
     ], { base: 'web/', }).pipe(gulp.dest(MINIFIED_DIR + 'web')),
     gulp.src(['external/bcmaps/*.bcmap', 'external/bcmaps/LICENSE'],
-             { base: 'external/bcmaps', })
-        .pipe(gulp.dest(MINIFIED_DIR + 'web/cmaps')),
+      { base: 'external/bcmaps', })
+      .pipe(gulp.dest(MINIFIED_DIR + 'web/cmaps')),
 
     preprocessHTML('web/viewer.html', defines)
-        .pipe(gulp.dest(MINIFIED_DIR + 'web')),
+      .pipe(gulp.dest(MINIFIED_DIR + 'web')),
     preprocessCSS('web/viewer.css', 'minified', defines, true)
-        .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
-        .pipe(gulp.dest(MINIFIED_DIR + 'web')),
+      .pipe(postcss([autoprefixer(AUTOPREFIXER_CONFIG)]))
+      .pipe(gulp.dest(MINIFIED_DIR + 'web')),
 
     gulp.src('web/compressed.tracemonkey-pldi-09.pdf')
-        .pipe(gulp.dest(MINIFIED_DIR + 'web')),
+      .pipe(gulp.dest(MINIFIED_DIR + 'web')),
   ]);
-});
+}));
 
-gulp.task('minified-post', ['minified-pre'], function () {
+gulp.task('minified-post', gulp.series('minified-pre', function () {
   var pdfFile = fs.readFileSync(MINIFIED_DIR + '/build/pdf.js').toString();
   var pdfWorkerFile =
     fs.readFileSync(MINIFIED_DIR + '/build/pdf.worker.js').toString();
@@ -722,13 +724,13 @@ gulp.task('minified-post', ['minified-pre'], function () {
   var optsForHugeFile = { compress: { sequences: false, }, };
 
   fs.writeFileSync(MINIFIED_DIR + '/web/pdf.viewer.js',
-                   UglifyES.minify(viewerFiles).code);
+    UglifyES.minify(viewerFiles).code);
   fs.writeFileSync(MINIFIED_DIR + '/build/pdf.min.js',
-                   UglifyES.minify(pdfFile).code);
+    UglifyES.minify(pdfFile).code);
   fs.writeFileSync(MINIFIED_DIR + '/build/pdf.worker.min.js',
-                   UglifyES.minify(pdfWorkerFile, optsForHugeFile).code);
+    UglifyES.minify(pdfWorkerFile, optsForHugeFile).code);
   fs.writeFileSync(MINIFIED_DIR + 'image_decoders/pdf.image_decoders.min.js',
-                   UglifyES.minify(pdfImageDecodersFile).code);
+    UglifyES.minify(pdfImageDecodersFile).code);
 
   console.log();
   console.log('### Cleaning js files');
@@ -738,14 +740,14 @@ gulp.task('minified-post', ['minified-pre'], function () {
   fs.unlinkSync(MINIFIED_DIR + '/build/pdf.js');
   fs.unlinkSync(MINIFIED_DIR + '/build/pdf.worker.js');
   fs.renameSync(MINIFIED_DIR + '/build/pdf.min.js',
-                MINIFIED_DIR + '/build/pdf.js');
+    MINIFIED_DIR + '/build/pdf.js');
   fs.renameSync(MINIFIED_DIR + '/build/pdf.worker.min.js',
-                MINIFIED_DIR + '/build/pdf.worker.js');
+    MINIFIED_DIR + '/build/pdf.worker.js');
   fs.renameSync(MINIFIED_DIR + '/image_decoders/pdf.image_decoders.min.js',
-                MINIFIED_DIR + '/image_decoders/pdf.image_decoders.js');
-});
+    MINIFIED_DIR + '/image_decoders/pdf.image_decoders.js');
+}));
 
-gulp.task('minified', ['minified-post']);
+gulp.task('minified', gulp.series('minified-post'));
 
 function preprocessDefaultPreferences(content) {
   var preprocessor2 = require('./external/builder/preprocessor2.js');
@@ -761,20 +763,20 @@ function preprocessDefaultPreferences(content) {
   }, content);
 
   return (licenseHeader + '\n' + GLOBALS + '\n' + MODIFICATION_WARNING + '\n' +
-          content + '\n');
+    content + '\n');
 }
 
-gulp.task('mozcentral-pre', ['buildnumber', 'locale'], function () {
+gulp.task('mozcentral-pre', gulp.series('buildnumber', 'locale', function () {
   console.log();
   console.log('### Building mozilla-central extension');
   var defines = builder.merge(DEFINES, { MOZCENTRAL: true, SKIP_BABEL: true, });
 
   var MOZCENTRAL_DIR = BUILD_DIR + 'mozcentral/',
-      MOZCENTRAL_EXTENSION_DIR = MOZCENTRAL_DIR + 'browser/extensions/pdfjs/',
-      MOZCENTRAL_CONTENT_DIR = MOZCENTRAL_EXTENSION_DIR + 'content/',
-      FIREFOX_EXTENSION_DIR = 'extensions/firefox/',
-      MOZCENTRAL_L10N_DIR = MOZCENTRAL_DIR + 'browser/locales/en-US/pdfviewer/',
-      FIREFOX_CONTENT_DIR = EXTENSION_SRC_DIR + '/firefox/content/';
+    MOZCENTRAL_EXTENSION_DIR = MOZCENTRAL_DIR + 'browser/extensions/pdfjs/',
+    MOZCENTRAL_CONTENT_DIR = MOZCENTRAL_EXTENSION_DIR + 'content/',
+    FIREFOX_EXTENSION_DIR = 'extensions/firefox/',
+    MOZCENTRAL_L10N_DIR = MOZCENTRAL_DIR + 'browser/locales/en-US/pdfviewer/',
+    FIREFOX_CONTENT_DIR = EXTENSION_SRC_DIR + '/firefox/content/';
 
   // Clear out everything in the firefox extension build directory
   rimraf.sync(MOZCENTRAL_DIR);
@@ -786,41 +788,41 @@ gulp.task('mozcentral-pre', ['buildnumber', 'locale'], function () {
     createBundle(defines).pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'build')),
     createWebBundle(defines).pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
     gulp.src(COMMON_WEB_FILES, { base: 'web/', })
-        .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
+      .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
     gulp.src(['external/bcmaps/*.bcmap', 'external/bcmaps/LICENSE'],
-             { base: 'external/bcmaps', })
-        .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web/cmaps')),
+      { base: 'external/bcmaps', })
+      .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web/cmaps')),
 
     preprocessHTML('web/viewer.html', defines)
-        .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
+      .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
     preprocessCSS('web/viewer.css', 'mozcentral', defines, true)
-        .pipe(postcss([
-            autoprefixer({ browsers: ['last 1 firefox versions'], })
-        ]))
-        .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
+      .pipe(postcss([
+        autoprefixer({ browsers: ['last 1 firefox versions'], })
+      ]))
+      .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR + 'web')),
 
     gulp.src(FIREFOX_EXTENSION_DIR + 'locale/en-US/*.properties')
-        .pipe(gulp.dest(MOZCENTRAL_L10N_DIR)),
+      .pipe(gulp.dest(MOZCENTRAL_L10N_DIR)),
     gulp.src(FIREFOX_EXTENSION_DIR + 'README.mozilla')
-        .pipe(replace(/\bPDFJSSCRIPT_VERSION\b/g, version))
-        .pipe(replace(/\bPDFJSSCRIPT_COMMIT\b/g, commit))
-        .pipe(gulp.dest(MOZCENTRAL_EXTENSION_DIR)),
+      .pipe(replace(/\bPDFJSSCRIPT_VERSION\b/g, version))
+      .pipe(replace(/\bPDFJSSCRIPT_COMMIT\b/g, commit))
+      .pipe(gulp.dest(MOZCENTRAL_EXTENSION_DIR)),
     gulp.src('LICENSE').pipe(gulp.dest(MOZCENTRAL_EXTENSION_DIR)),
     gulp.src(FIREFOX_CONTENT_DIR + 'PdfJsDefaultPreferences.jsm')
-        .pipe(transform('utf8', preprocessDefaultPreferences))
-        .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR)),
+      .pipe(transform('utf8', preprocessDefaultPreferences))
+      .pipe(gulp.dest(MOZCENTRAL_CONTENT_DIR)),
   ]);
-});
+}));
 
-gulp.task('mozcentral', ['mozcentral-pre']);
+gulp.task('mozcentral', gulp.series('mozcentral-pre'));
 
-gulp.task('chromium-pre', ['buildnumber', 'locale'], function () {
+gulp.task('chromium-pre', gulp.series('buildnumber', 'locale', function () {
   console.log();
   console.log('### Building Chromium extension');
   var defines = builder.merge(DEFINES, { CHROME: true, });
 
   var CHROME_BUILD_DIR = BUILD_DIR + '/chromium/',
-      CHROME_BUILD_CONTENT_DIR = CHROME_BUILD_DIR + '/content/';
+    CHROME_BUILD_CONTENT_DIR = CHROME_BUILD_DIR + '/content/';
 
   // Clear out everything in the chrome extension build directory
   rimraf.sync(CHROME_BUILD_DIR);
@@ -831,35 +833,35 @@ gulp.task('chromium-pre', ['buildnumber', 'locale'], function () {
     createBundle(defines).pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'build')),
     createWebBundle(defines).pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
     gulp.src(COMMON_WEB_FILES, { base: 'web/', })
-        .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
+      .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
 
     gulp.src([
       'web/locale/*/viewer.properties',
       'web/locale/locale.properties'
     ], { base: 'web/', }).pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
     gulp.src(['external/bcmaps/*.bcmap', 'external/bcmaps/LICENSE'],
-             { base: 'external/bcmaps', })
-        .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web/cmaps')),
+      { base: 'external/bcmaps', })
+      .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web/cmaps')),
 
     preprocessHTML('web/viewer.html', defines)
-        .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
+      .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
     preprocessCSS('web/viewer.css', 'chrome', defines, true)
-        .pipe(postcss([autoprefixer({ browsers: ['chrome >= 49'], })]))
-        .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
+      .pipe(postcss([autoprefixer({ browsers: ['chrome >= 49'], })]))
+      .pipe(gulp.dest(CHROME_BUILD_CONTENT_DIR + 'web')),
 
     gulp.src('LICENSE').pipe(gulp.dest(CHROME_BUILD_DIR)),
     gulp.src('extensions/chromium/manifest.json')
-        .pipe(replace(/\bPDFJSSCRIPT_VERSION\b/g, version))
-        .pipe(gulp.dest(CHROME_BUILD_DIR)),
+      .pipe(replace(/\bPDFJSSCRIPT_VERSION\b/g, version))
+      .pipe(gulp.dest(CHROME_BUILD_DIR)),
     gulp.src([
       'extensions/chromium/**/*.{html,js,css,png}',
       'extensions/chromium/preferences_schema.json'
     ], { base: 'extensions/chromium/', })
-        .pipe(gulp.dest(CHROME_BUILD_DIR)),
+      .pipe(gulp.dest(CHROME_BUILD_DIR)),
   ]);
-});
+}));
 
-gulp.task('chromium', ['chromium-pre']);
+gulp.task('chromium', gulp.series('chromium-pre'));
 
 gulp.task('jsdoc', function (done) {
   console.log();
@@ -875,13 +877,13 @@ gulp.task('jsdoc', function (done) {
   rimraf(JSDOC_BUILD_DIR, function () {
     mkdirp(JSDOC_BUILD_DIR, function () {
       var command = '"node_modules/.bin/jsdoc" -d ' + JSDOC_BUILD_DIR + ' ' +
-                    JSDOC_FILES.join(' ');
+        JSDOC_FILES.join(' ');
       exec(command, done);
     });
   });
 });
 
-gulp.task('lib', ['buildnumber'], function () {
+gulp.task('lib', gulp.series('buildnumber', function () {
   // When we create a bundle, webpack is run on the source and it will replace
   // require with __webpack_require__. When we want to use the real require,
   // __non_webpack_require__ has to be used.
@@ -961,11 +963,11 @@ gulp.task('lib', ['buildnumber'], function () {
     gulp.src('external/url/url-lib.js', { base: '.', })
       .pipe(gulp.dest('build/')),
   ]);
-});
+}));
 
-gulp.task('web-pre', ['generic', 'jsdoc']);
+gulp.task('web-pre', gulp.series('generic', 'jsdoc'));
 
-gulp.task('publish', ['generic'], function (done) {
+gulp.task('publish', gulp.series('generic', function (done) {
   var version = JSON.parse(
     fs.readFileSync(BUILD_DIR + 'version.json').toString()).version;
 
@@ -984,43 +986,43 @@ gulp.task('publish', ['generic'], function (done) {
           done();
         });
     });
-});
+}));
 
-gulp.task('testing-pre', function() {
+gulp.task('testing-pre', function () {
   process.env['TESTING'] = 'true';
 });
 
-gulp.task('test', ['testing-pre', 'generic', 'components'], function() {
+gulp.task('test', gulp.series('testing-pre', 'generic', 'components', function () {
   return streamqueue({ objectMode: true, },
     createTestSource('unit'), createTestSource('browser'));
-});
+}));
 
-gulp.task('bottest', ['testing-pre', 'generic', 'components'], function() {
+gulp.task('bottest', gulp.series('testing-pre', 'generic', 'components', function () {
   return streamqueue({ objectMode: true, },
     createTestSource('unit', true), createTestSource('font', true),
     createTestSource('browser (no reftest)', true));
-});
+}));
 
-gulp.task('browsertest', ['testing-pre', 'generic', 'components'], function() {
+gulp.task('browsertest', gulp.series('testing-pre', 'generic', 'components', function () {
   return createTestSource('browser');
-});
+}));
 
-gulp.task('unittest', ['testing-pre', 'generic', 'components'], function() {
+gulp.task('unittest', gulp.series('testing-pre', 'generic', 'components', function () {
   return createTestSource('unit');
-});
+}));
 
-gulp.task('fonttest', ['testing-pre'], function() {
+gulp.task('fonttest', gulp.series('testing-pre', function () {
   return createTestSource('font');
-});
+}));
 
-gulp.task('makeref', ['testing-pre', 'generic', 'components'], function(done) {
+gulp.task('makeref', gulp.series('testing-pre', 'generic', 'components', function (done) {
   makeRef(done);
-});
+}));
 
-gulp.task('botmakeref', ['testing-pre', 'generic', 'components'],
-    function(done) {
-  makeRef(done, true);
-});
+gulp.task('botmakeref', gulp.series('testing-pre', 'generic', 'components',
+  function (done) {
+    makeRef(done, true);
+  }));
 
 gulp.task('baseline', function (done) {
   console.log();
@@ -1046,22 +1048,22 @@ gulp.task('baseline', function (done) {
     }
 
     exec('git checkout ' + baselineCommit, { cwd: workingDirectory, },
-        function (error) {
-      if (error) {
-        done(new Error('Baseline commit checkout failed.'));
-        return;
-      }
+      function (error) {
+        if (error) {
+          done(new Error('Baseline commit checkout failed.'));
+          return;
+        }
 
-      console.log('Baseline commit "' + baselineCommit + '" checked out.');
-      done();
-    });
+        console.log('Baseline commit "' + baselineCommit + '" checked out.');
+        done();
+      });
   });
 });
 
-gulp.task('unittestcli', ['testing-pre', 'lib'], function(done) {
+gulp.task('unittestcli', gulp.series('testing-pre', 'lib', function (done) {
   var args = ['JASMINE_CONFIG_PATH=test/unit/clitests.json'];
   var testProcess = spawn('node_modules/.bin/jasmine', args,
-                          { stdio: 'inherit', });
+    { stdio: 'inherit', });
   testProcess.on('close', function (code) {
     if (code !== 0) {
       done(new Error('Unit tests failed.'));
@@ -1069,7 +1071,7 @@ gulp.task('unittestcli', ['testing-pre', 'lib'], function(done) {
     }
     done();
   });
-});
+}));
 
 gulp.task('lint', function (done) {
   console.log();
@@ -1077,7 +1079,7 @@ gulp.task('lint', function (done) {
 
   // Ensure that we lint the Firefox specific *.jsm files too.
   var options = ['node_modules/eslint/bin/eslint', '--ext', '.js,.jsm', '.',
-                 '--report-unused-disable-directives'];
+    '--report-unused-disable-directives'];
   var esLintProcess = spawn('node', options, { stdio: 'inherit', });
   esLintProcess.on('close', function (code) {
     if (code !== 0) {
@@ -1089,8 +1091,8 @@ gulp.task('lint', function (done) {
     console.log('### Checking supplemental files');
 
     if (!checkChromePreferencesFile(
-          'extensions/chromium/preferences_schema.json',
-          'web/default_preferences.json')) {
+      'extensions/chromium/preferences_schema.json',
+      'web/default_preferences.json')) {
       done(new Error('chromium/preferences_schema is not in sync.'));
       return;
     }
@@ -1110,7 +1112,7 @@ gulp.task('server', function (done) {
   server.start();
 });
 
-gulp.task('clean', function(callback) {
+gulp.task('clean', function (callback) {
   console.log();
   console.log('### Cleaning up project builds');
 
@@ -1129,7 +1131,7 @@ gulp.task('makefile', function () {
     .pipe(gulp.dest('.'));
 });
 
-gulp.task('importl10n', function(done) {
+gulp.task('importl10n', function (done) {
   var locales = require('./external/importL10n/locales.js');
 
   console.log();
@@ -1141,7 +1143,7 @@ gulp.task('importl10n', function(done) {
   locales.downloadL10n(L10N_DIR, done);
 });
 
-gulp.task('gh-pages-prepare', ['web-pre'], function () {
+gulp.task('gh-pages-prepare', gulp.series('web-pre', function () {
   console.log();
   console.log('### Creating web site');
 
@@ -1150,15 +1152,15 @@ gulp.task('gh-pages-prepare', ['web-pre'], function () {
   // 'vfs' because web/viewer.html needs its BOM.
   return merge([
     vfs.src(GENERIC_DIR + '**/*', { base: GENERIC_DIR, stripBOM: false, })
-       .pipe(gulp.dest(GH_PAGES_DIR)),
+      .pipe(gulp.dest(GH_PAGES_DIR)),
     gulp.src('test/features/**/*', { base: 'test/', })
-        .pipe(gulp.dest(GH_PAGES_DIR)),
+      .pipe(gulp.dest(GH_PAGES_DIR)),
     gulp.src(JSDOC_BUILD_DIR + '**/*', { base: JSDOC_BUILD_DIR, })
-        .pipe(gulp.dest(GH_PAGES_DIR + 'api/draft/')),
+      .pipe(gulp.dest(GH_PAGES_DIR + 'api/draft/')),
   ]);
-});
+}));
 
-gulp.task('wintersmith', ['gh-pages-prepare'], function (done) {
+gulp.task('wintersmith', gulp.series('gh-pages-prepare', function (done) {
   var wintersmith = require('wintersmith');
   var env = wintersmith('docs/config.json');
   env.build(GH_PAGES_DIR, function (error) {
@@ -1166,30 +1168,30 @@ gulp.task('wintersmith', ['gh-pages-prepare'], function (done) {
       return done(error);
     }
     replaceInFile(GH_PAGES_DIR + '/getting_started/index.html',
-                  /STABLE_VERSION/g, config.stableVersion);
+      /STABLE_VERSION/g, config.stableVersion);
     replaceInFile(GH_PAGES_DIR + '/getting_started/index.html',
-                  /BETA_VERSION/g, config.betaVersion);
+      /BETA_VERSION/g, config.betaVersion);
 
     // Hide the beta version button if there is only a stable version.
     const groupClass = config.betaVersion ? 'btn-group-vertical centered' : '';
     const hiddenClass = config.betaVersion ? '' : 'hidden';
     replaceInFile(GH_PAGES_DIR + '/getting_started/index.html',
-                  /GROUP_CLASS/g, groupClass);
+      /GROUP_CLASS/g, groupClass);
     replaceInFile(GH_PAGES_DIR + '/getting_started/index.html',
-                  /HIDDEN_CLASS/g, hiddenClass);
+      /HIDDEN_CLASS/g, hiddenClass);
 
     console.log('Done building with wintersmith.');
     done();
   });
-});
+}));
 
-gulp.task('gh-pages-git', ['gh-pages-prepare', 'wintersmith'], function () {
+gulp.task('gh-pages-git', gulp.series('gh-pages-prepare', 'wintersmith', function () {
   var VERSION = getVersionJSON().version;
   var reason = process.env['PDFJS_UPDATE_REASON'];
 
   safeSpawnSync('git', ['init'], { cwd: GH_PAGES_DIR, });
   safeSpawnSync('git', ['remote', 'add', 'origin', REPO],
-                { cwd: GH_PAGES_DIR, });
+    { cwd: GH_PAGES_DIR, });
   safeSpawnSync('git', ['add', '-A'], { cwd: GH_PAGES_DIR, });
   safeSpawnSync('git', [
     'commit', '-am', 'gh-pages site created via gulpfile.js script',
@@ -1199,12 +1201,11 @@ gulp.task('gh-pages-git', ['gh-pages-prepare', 'wintersmith'], function () {
 
   console.log();
   console.log('Website built in ' + GH_PAGES_DIR);
-});
+}));
 
-gulp.task('web', ['gh-pages-prepare', 'wintersmith', 'gh-pages-git']);
+gulp.task('web', gulp.series('gh-pages-prepare', 'wintersmith', 'gh-pages-git'));
 
-gulp.task('dist-pre',
-    ['generic', 'components', 'image_decoders', 'lib', 'minified'], function() {
+gulp.task('dist-pre', gulp.series('generic', 'components', 'image_decoders', 'lib', 'minified', function () {
   var VERSION = getVersionJSON().version;
 
   console.log();
@@ -1277,13 +1278,13 @@ gulp.task('dist-pre',
     packageJsonSrc.pipe(gulp.dest(DIST_DIR)),
     bowerJsonSrc.pipe(gulp.dest(DIST_DIR)),
     vfs.src('external/dist/**/*',
-            { base: 'external/dist', stripBOM: false, })
-       .pipe(gulp.dest(DIST_DIR)),
+      { base: 'external/dist', stripBOM: false, })
+      .pipe(gulp.dest(DIST_DIR)),
     gulp.src(GENERIC_DIR + 'LICENSE')
-        .pipe(gulp.dest(DIST_DIR)),
+      .pipe(gulp.dest(DIST_DIR)),
     gulp.src(GENERIC_DIR + 'web/cmaps/**/*',
-             { base: GENERIC_DIR + 'web', })
-        .pipe(gulp.dest(DIST_DIR)),
+      { base: GENERIC_DIR + 'web', })
+      .pipe(gulp.dest(DIST_DIR)),
     gulp.src([
       GENERIC_DIR + 'build/pdf.js',
       GENERIC_DIR + 'build/pdf.js.map',
@@ -1292,24 +1293,24 @@ gulp.task('dist-pre',
       SRC_DIR + 'pdf.worker.entry.js',
     ]).pipe(gulp.dest(DIST_DIR + 'build/')),
     gulp.src(MINIFIED_DIR + 'build/pdf.js')
-        .pipe(rename('pdf.min.js'))
-        .pipe(gulp.dest(DIST_DIR + 'build/')),
+      .pipe(rename('pdf.min.js'))
+      .pipe(gulp.dest(DIST_DIR + 'build/')),
     gulp.src(MINIFIED_DIR + 'build/pdf.worker.js')
-        .pipe(rename('pdf.worker.min.js'))
-        .pipe(gulp.dest(DIST_DIR + 'build/')),
+      .pipe(rename('pdf.worker.min.js'))
+      .pipe(gulp.dest(DIST_DIR + 'build/')),
     gulp.src(MINIFIED_DIR + 'image_decoders/pdf.image_decoders.js')
-        .pipe(rename('pdf.image_decoders.min.js'))
-        .pipe(gulp.dest(DIST_DIR + 'image_decoders/')),
+      .pipe(rename('pdf.image_decoders.min.js'))
+      .pipe(gulp.dest(DIST_DIR + 'image_decoders/')),
     gulp.src(COMPONENTS_DIR + '**/*', { base: COMPONENTS_DIR, })
-        .pipe(gulp.dest(DIST_DIR + 'web/')),
+      .pipe(gulp.dest(DIST_DIR + 'web/')),
     gulp.src(IMAGE_DECODERS_DIR + '**/*', { base: IMAGE_DECODERS_DIR, })
-        .pipe(gulp.dest(DIST_DIR + 'image_decoders')),
+      .pipe(gulp.dest(DIST_DIR + 'image_decoders')),
     gulp.src(LIB_DIR + '**/*', { base: LIB_DIR, })
-        .pipe(gulp.dest(DIST_DIR + 'lib/')),
+      .pipe(gulp.dest(DIST_DIR + 'lib/')),
   ]);
-});
+}));
 
-gulp.task('dist-install', ['dist-pre'], function () {
+gulp.task('dist-install', gulp.series('dist-pre', function () {
   var distPath = DIST_DIR;
   var opts = {};
   var installPath = process.env['PDFJS_INSTALL_PATH'];
@@ -1318,9 +1319,9 @@ gulp.task('dist-install', ['dist-pre'], function () {
     distPath = path.relative(installPath, distPath);
   }
   safeSpawnSync('npm', ['install', distPath], opts);
-});
+}));
 
-gulp.task('dist-repo-git', ['dist-pre'], function () {
+gulp.task('dist-repo-git', gulp.series('dist-pre', function () {
   var VERSION = getVersionJSON().version;
 
   console.log();
@@ -1331,18 +1332,18 @@ gulp.task('dist-repo-git', ['dist-pre'], function () {
   safeSpawnSync('git', ['add', '*'], { cwd: DIST_DIR, });
   safeSpawnSync('git', ['commit', '-am', message], { cwd: DIST_DIR, });
   safeSpawnSync('git', ['tag', '-a', 'v' + VERSION, '-m', message],
-                { cwd: DIST_DIR, });
+    { cwd: DIST_DIR, });
 
   console.log();
   console.log('Done. Push with');
   console.log('  cd ' + DIST_DIR + '; ' +
-              'git push --tags ' + DIST_REPO_URL + ' master');
+    'git push --tags ' + DIST_REPO_URL + ' master');
   console.log();
-});
+}));
 
-gulp.task('dist', ['dist-repo-git']);
+gulp.task('dist', gulp.series('dist-repo-git'));
 
-gulp.task('mozcentralbaseline', ['baseline'], function (done) {
+gulp.task('mozcentralbaseline', gulp.series('baseline', function (done) {
   console.log();
   console.log('### Creating mozcentral baseline environment');
 
@@ -1351,26 +1352,25 @@ gulp.task('mozcentralbaseline', ['baseline'], function (done) {
 
   var workingDirectory = path.resolve(process.cwd(), BASELINE_DIR);
   safeSpawnSync('gulp', ['mozcentral'],
-                { env: process.env, cwd: workingDirectory, stdio: 'inherit', });
+    { env: process.env, cwd: workingDirectory, stdio: 'inherit', });
 
   // Copy the mozcentral build to the mozcentral baseline directory.
   rimraf.sync(MOZCENTRAL_BASELINE_DIR);
   mkdirp.sync(MOZCENTRAL_BASELINE_DIR);
 
   gulp.src([BASELINE_DIR + BUILD_DIR + 'mozcentral/**/*'])
-      .pipe(gulp.dest(MOZCENTRAL_BASELINE_DIR))
-      .on('end', function () {
-        // Commit the mozcentral baseline.
-        safeSpawnSync('git', ['init'], { cwd: MOZCENTRAL_BASELINE_DIR, });
-        safeSpawnSync('git', ['add', '.'], { cwd: MOZCENTRAL_BASELINE_DIR, });
-        safeSpawnSync('git', ['commit', '-m', '"mozcentral baseline"'],
-                      { cwd: MOZCENTRAL_BASELINE_DIR, });
-        done();
-      });
-});
+    .pipe(gulp.dest(MOZCENTRAL_BASELINE_DIR))
+    .on('end', function () {
+      // Commit the mozcentral baseline.
+      safeSpawnSync('git', ['init'], { cwd: MOZCENTRAL_BASELINE_DIR, });
+      safeSpawnSync('git', ['add', '.'], { cwd: MOZCENTRAL_BASELINE_DIR, });
+      safeSpawnSync('git', ['commit', '-m', '"mozcentral baseline"'],
+        { cwd: MOZCENTRAL_BASELINE_DIR, });
+      done();
+    });
+}));
 
-gulp.task('mozcentraldiff', ['mozcentral', 'mozcentralbaseline'],
-    function (done) {
+gulp.task('mozcentraldiff', gulp.series('mozcentral', 'mozcentralbaseline', function (done) {
   console.log();
   console.log('### Creating mozcentral diff');
 
@@ -1382,28 +1382,28 @@ gulp.task('mozcentraldiff', ['mozcentral', 'mozcentralbaseline'],
   rimraf.sync(MOZCENTRAL_BASELINE_DIR + '*');
 
   gulp.src([BUILD_DIR + 'mozcentral/**/*'])
-      .pipe(gulp.dest(MOZCENTRAL_BASELINE_DIR))
-      .on('end', function () {
-        safeSpawnSync('git', ['add', '-A'], { cwd: MOZCENTRAL_BASELINE_DIR, });
-        var diff = safeSpawnSync('git',
-          ['diff', '--binary', '--cached', '--unified=8'],
-          { cwd: MOZCENTRAL_BASELINE_DIR, }).stdout;
+    .pipe(gulp.dest(MOZCENTRAL_BASELINE_DIR))
+    .on('end', function () {
+      safeSpawnSync('git', ['add', '-A'], { cwd: MOZCENTRAL_BASELINE_DIR, });
+      var diff = safeSpawnSync('git',
+        ['diff', '--binary', '--cached', '--unified=8'],
+        { cwd: MOZCENTRAL_BASELINE_DIR, }).stdout;
 
-        createStringSource(MOZCENTRAL_DIFF_FILE, diff)
-          .pipe(gulp.dest(BUILD_DIR))
-          .on('end', function () {
-            console.log('Result diff can be found at ' + BUILD_DIR +
-                        MOZCENTRAL_DIFF_FILE);
-            done();
-          });
-      });
-});
+      createStringSource(MOZCENTRAL_DIFF_FILE, diff)
+        .pipe(gulp.dest(BUILD_DIR))
+        .on('end', function () {
+          console.log('Result diff can be found at ' + BUILD_DIR +
+            MOZCENTRAL_DIFF_FILE);
+          done();
+        });
+    });
+}));
 
 gulp.task('externaltest', function () {
   fancylog('Running test-fixtures.js');
   safeSpawnSync('node', ['external/builder/test-fixtures.js'],
-                { stdio: 'inherit', });
+    { stdio: 'inherit', });
   fancylog('Running test-fixtures_esprima.js');
   safeSpawnSync('node', ['external/builder/test-fixtures_esprima.js'],
-                { stdio: 'inherit', });
+    { stdio: 'inherit', });
 });
